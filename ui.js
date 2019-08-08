@@ -9,7 +9,9 @@ $(async function () {
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
   const $userFunctions = $("#user-functions");
-  const $submitStory = $("#submit-story")
+  const $submitStory = $("#submit-story");
+  const $favoriteArticles = $('#favorited-articles');
+  const $userProfile = $('#user-profile');
 
   // global storyList variable
   let storyList = null;
@@ -90,6 +92,7 @@ $(async function () {
     hideElements();
     await generateStories();
     $allStoriesList.show();
+    checkForFavorites(currentUser);
   });
 
   /**
@@ -188,7 +191,9 @@ $(async function () {
       $filteredArticles,
       $ownStories,
       $loginForm,
-      $createAccountForm
+      $createAccountForm,
+      $favoriteArticles,
+      $userProfile
     ];
     elementsArr.forEach($elem => $elem.hide());
   }
@@ -247,21 +252,28 @@ $(async function () {
       currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
     }
     currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
-    $(e.target).toggleClass("far");
-    $(e.target).toggleClass("fas");
-    console.log(currentUser.favorites);
+    $(e.target).toggleClass("far").toggleClass("fas");
   });
 
   function checkForFavorites(user) {
     for (var i = 0; i < user.favorites.length; i++) {
       let storyElementId = user.favorites[i].storyId
       var starToFavorite = ($(`#${storyElementId}`).children(':first-child').children(':first-child'));
-      starToFavorite.toggleClass("far");
-      starToFavorite.toggleClass("fas");
-
-      // console.log(starToFavorite);
-      // console.log(currentUser.favorites);
+      starToFavorite.toggleClass("far").toggleClass("fas");
     }
-  }
+    $('#favorited-articles').empty();
+    for (var i = 0; i < currentUser.favorites.length; i++) {
+      $('#favorited-articles').append(generateStoryHTML(currentUser.favorites[i]))
+      $('#favorited-articles').children(':last-child').children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
+    }
+  } 
+
+  $('body').on('click', '#view-favorites', function() {
+    checkForFavorites(currentUser);
+    hideElements();
+    $favoriteArticles.toggle()
+  })
+
+
 
 });
