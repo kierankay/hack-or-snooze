@@ -42,19 +42,19 @@ class StoryList {
    *
    * Returns the new story object
    */
- 
+
   async addStory(user, newStory) {
     const response = await axios.post(`${BASE_URL}/stories`, {
-        token: user.loginToken,
-        story: {
-          author : newStory.author,
-          title : newStory.title,
-          url : newStory.url
-        }
-      })
-      console.log(response);
-      return response
-    };
+      token: user.loginToken,
+      story: {
+        author: newStory.author,
+        title: newStory.title,
+        url: newStory.url
+      }
+    })
+    console.log(response);
+    return response
+  };
   // TODO - Implement this functions!
   // this function should return the newly created story so it can be used in
   // the script.js file where it will be appended to the DOM
@@ -161,7 +161,33 @@ class User {
     existingUser.ownStories = response.data.user.stories.map(s => new Story(s));
     return existingUser;
   }
+
+
+  async addFavorite(storyId, username, token) {
+    let response = await axios.post(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
+      token: token
+    })
+  }
+
+  async removeFavorite(storyId, username, token) {
+    let response = await axios.delete(`${BASE_URL}/users/${username}/favorites/${storyId}`, {
+      data: {
+        token: token
+      }
+    })
+  }
+
+
+
+
 }
+
+
+
+
+
+
+
 
 /**
  * Class to represent a single story.
