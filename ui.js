@@ -99,7 +99,7 @@ $(async function () {
     hideElements();
     await generateStories();
     $allStoriesList.show();
-    checkForFavorites(currentUser);
+    checkForFavorites();
   });
 
   /**
@@ -120,7 +120,7 @@ $(async function () {
 
     if (currentUser) {
       showNavForLoggedInUser();
-      checkForFavorites(currentUser);
+      checkForFavorites();
     }
   }
 
@@ -304,7 +304,7 @@ $(async function () {
   }
 
   $('#view-favorites').on('click', function () {
-    checkForFavorites(currentUser);
+    checkForFavorites();
     hideElements();
     $favoriteArticles.toggle()
   })
