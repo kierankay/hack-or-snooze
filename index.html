@@ -50,6 +50,26 @@
       <button type="submit">submit</button>
       <hr>
     </form>
+    <form action="" class="hidden" id="edit-form">
+      <div>
+        <label for="edit-author">author</label>
+        <input id="edit-author" required type="text" placeholder="author name">
+      </div>
+      <div>
+        <label for="edit-title">title</label>
+        <input id="edit-title" required type="text" placeholder="article title">
+      </div>
+      <div>
+        <label for="edit-url">url</label>
+        <input id="edit-url" required type="url" placeholder="article url">
+      </div>
+      <div class="hidden">
+        <label for="story-id">story-id</label>
+        <input id="story-id">
+      </div>
+      <button type="submit" id="edit-update">update</button>
+      <hr>
+    </form>
     <article>
       <ol id="all-articles-list" class="articles-list">
         <h3>Loading...</h3>

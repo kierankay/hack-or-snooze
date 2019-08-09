@@ -13,6 +13,7 @@ $(async function () {
   const $favoriteArticles = $('#favorited-articles');
   const $userProfile = $('#user-profile');
   const $myArticles = $('#my-articles');
+  const $editForm = $('#edit-form');
 
   // global storyList variable
   let storyList = null;
@@ -244,11 +245,13 @@ $(async function () {
     const storyObj = {
       author: $('#author').val(),
       title: $('#title').val(),
-      url: $('#url').val()
+      url: $('#url').val(),
+      storyid: $('#story-id').val()
     };
-    storyList.addStory(currentUser, storyObj).then(async function(response) {
+    storyList.addStory(currentUser, storyObj).then(async function (response) {
       console.log(response);
       await generateStories();
+      refreshUser();
       return response;
     });
     $submitForm.slideToggle();
@@ -276,17 +279,16 @@ $(async function () {
         })
     }
 
-    currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
+    refreshUser();
     $(e.target).toggleClass("far").toggleClass("fas");
 
   });
 
-  async function checkForFavorites(user) {
-
-    currentUser = await User.getLoggedInUser(user.loginToken, user.username);
+  async function checkForFavorites() {
+    refreshUser();
     // empty the favorite articles
     $favoriteArticles.empty();
-    for (let favorite of user.favorites) {
+    for (let favorite of currentUser.favorites) {
 
       // get the story ID of a story
       let storyElementId = favorite.storyId;
@@ -306,13 +308,19 @@ $(async function () {
     $favoriteArticles.toggle()
   })
 
-  $('#view-my-articles').on('click', function() {
+  $('#view-my-articles').on('click', function () {
+    updateArticles();
+  })
+
+
+  function updateArticles() {
     hideElements();
     $myArticles.toggle();
     $myArticles.empty();
-
-    for (let story of currentUser.ownStories) {
-      let newStory = generateStoryHTML(story);
+    console.log(currentUser.ownStories);
+    let storiesList = currentUser.ownStories
+    for (var i = storiesList.length - 1; i >= 0; i--) {
+      let newStory = generateStoryHTML(storiesList[i]);
       newStory.children(':last-child').append(`<a class="hidden" href="#"><small class="article-edit">edit article</small></a>`);
       let foundIndex = currentUser.favorites.findIndex(story => story.storyId === newStory[0].id);
       if (foundIndex >= 0) {
@@ -320,17 +328,51 @@ $(async function () {
       };
       $myArticles.append(newStory);
     }
+  }
 
-  })
-
-  $('#my-articles').on('mouseover', 'li', function(e) {
+  $('#my-articles').on('mouseover', 'li', function (e) {
     $(e.currentTarget).children(':last-child').children(':last-child').removeClass('hidden');
-  }).on('mouseleave', 'li', function(e) {
+  }).on('mouseleave', 'li', function (e) {
     $(e.currentTarget).children(':last-child').children(':last-child').addClass('hidden');
   })
 
   function toggleStoryStar(jQueryStoryElement) {
     jQueryStoryElement.children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
   }
+
+  async function refreshUser() {
+    currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
+
+  }
+
+
+  $('body').on('click', '.article-edit', function (e) {
+    $editForm.slideToggle();
+    console.log(e.target.parentNode.parentNode.parentNode);
+    let retrievedArticle = $(e.target.parentNode.parentNode.parentNode).children(':nth-child(2)').children(':nth-child(1)').text();
+    $('#edit-title').val(retrievedArticle);
+    let retrievedAuthor = $(e.target.parentNode.parentNode.parentNode).children(':nth-child(3)').text().split(' ')[1];
+    $('#edit-author').val(retrievedAuthor);
+    let retrievedLink = $(e.target.parentNode.parentNode.parentNode).children(':nth-child(2)').attr('href');
+    $('#edit-url').val(retrievedLink).attr('disabled', true);
+    let retrievedId = $(e.target.parentNode.parentNode.parentNode).attr('id');
+    $('#story-id').val(retrievedId);
+
+
+  })
+
+  $('#edit-update').on('click', async function (e) {
+    let editedTitle = $('#edit-title').val();
+    let editedAuthor = $('#edit-author').val();
+    let storyId = $('#story-id').val();
+    let token = currentUser.loginToken;
+    await storyList.updateStory(token, editedAuthor, editedTitle, storyId).then(async function() {
+      await refreshUser();
+      updateArticles();
+    }).catch(function (err) {
+      console.log(err.response);
+    });
+  });
+
 
 });

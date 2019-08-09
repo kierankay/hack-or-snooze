@@ -55,6 +55,19 @@ class StoryList {
     // })
     // return response
   };
+
+
+  async updateStory(token, author, title, storyId){
+    return await axios.patch(`${BASE_URL}/stories/${storyId}`,{
+      token: token,
+      story: {
+        author: author,
+        title: title
+      }
+    })
+  }
+
+
   // TODO - Implement this functions!
   // this function should return the newly created story so it can be used in
   // the script.js file where it will be appended to the DOM
