@@ -52,7 +52,6 @@ class StoryList {
         url: newStory.url
       }
     })
-    console.log(response);
     return response
   };
   // TODO - Implement this functions!

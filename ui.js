@@ -18,7 +18,6 @@ $(async function () {
 
   // global currentUser variable
   let currentUser = null;
-  console.log(currentUser);
 
   await checkIfLoggedIn();
 
@@ -229,8 +228,9 @@ $(async function () {
   }
 
   $submitStory.on('click', function () {
-    $('#submit-form').slideToggle();
+    $submitForm.slideToggle();
   })
+
   $submitForm.on('submit', function () {
     const storyObj = {
       author: $('#author').val(),
@@ -241,39 +241,58 @@ $(async function () {
   })
 
   $('body').on('click', '.star', async function (e) {
-    let newFavorite = (e.target.parentNode.parentNode.id);
-    currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
-    let foundIndex = currentUser.favorites.findIndex(story => story.storyId === newFavorite);
+
+    let newFavoriteId = (e.target.parentNode.parentNode.id);
+    let foundIndex = currentUser.favorites.findIndex(story => story.storyId === newFavoriteId);
+
     if (foundIndex >= 0) {
-      await currentUser.removeFavorite(newFavorite, currentUser.username, currentUser.loginToken);
-      currentUser.favorites.splice(foundIndex, 1);
+      await currentUser.removeFavorite(newFavoriteId, currentUser.username, currentUser.loginToken).then(
+        function (response) {
+          currentUser.favorites.splice(foundIndex, 1);
+        }
+      );
     } else {
-      await currentUser.addFavorite(newFavorite, currentUser.username, currentUser.loginToken);
-      currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
+      await currentUser.addFavorite(newFavoriteId, currentUser.username, currentUser.loginToken).then(
+        function (response) {
+          currentUser.favorites.push({
+            storyId: newFavoriteId
+          });
+        })
     }
+
     currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
     $(e.target).toggleClass("far").toggleClass("fas");
+  
   });
 
-  function checkForFavorites(user) {
-    for (var i = 0; i < user.favorites.length; i++) {
-      let storyElementId = user.favorites[i].storyId
-      var starToFavorite = ($(`#${storyElementId}`).children(':first-child').children(':first-child'));
-      starToFavorite.toggleClass("far").toggleClass("fas");
-    }
-    $('#favorited-articles').empty();
-    for (var i = 0; i < currentUser.favorites.length; i++) {
-      $('#favorited-articles').append(generateStoryHTML(currentUser.favorites[i]))
-      $('#favorited-articles').children(':last-child').children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
-    }
-  } 
+  async function checkForFavorites(user) {
 
-  $('body').on('click', '#view-favorites', function() {
+    currentUser = await User.getLoggedInUser(user.loginToken, user.username);
+    // empty the favorite articles
+    $favoriteArticles.empty();
+    for (let favorite of user.favorites) {
+
+      // get the story ID of a story
+      let storyElementId = favorite.storyId;
+
+      // find the story element on the main page's star on the main page and star it
+      var favoriteToStar = ($(`#${storyElementId}`).children(':first-child').children(':first-child'));
+      favoriteToStar.toggleClass("far").toggleClass("fas");
+
+      // generate each story's HTML element and append it to the favorites page
+      let storyHtml = generateStoryHTML(favorite);
+      $favoriteArticles.append(storyHtml);
+
+      // toggle the star on found story element
+      $favoriteArticles.children(':last-child').children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
+
+    }
+  }
+
+  $('body').on('click', '#view-favorites', function () {
     checkForFavorites(currentUser);
     hideElements();
     $favoriteArticles.toggle()
   })
-
-
 
 });
