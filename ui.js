@@ -21,6 +21,8 @@ $(async function () {
   // global currentUser variable
   let currentUser = null;
 
+  // global story position variable
+  let skipStories = 25;
   await checkIfLoggedIn();
 
   /**
@@ -376,7 +378,6 @@ $(async function () {
   });
 
   $(window).scroll(async function () {
-    let skipStories = 25;
     let reloaded = false;
     if ($(window).scrollTop() === ($(document).height() - $(window).height()) && reloaded === false) {
       reloaded = true;
