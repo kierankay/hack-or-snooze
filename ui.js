@@ -12,6 +12,7 @@ $(async function () {
   const $submitStory = $("#submit-story");
   const $favoriteArticles = $('#favorited-articles');
   const $userProfile = $('#user-profile');
+  const $myArticles = $('#my-articles');
 
   // global storyList variable
   let storyList = null;
@@ -55,10 +56,16 @@ $(async function () {
     let password = $("#create-account-password").val();
 
     // call the create method, which calls the API and then builds a new user instance
-    const newUser = await User.create(username, password, name);
-    currentUser = newUser;
-    syncCurrentUserToLocalStorage();
-    loginAndSubmitForm();
+    await User.create(username, password, name).then(function (response) {
+      currentUser = response;
+      syncCurrentUserToLocalStorage();
+      loginAndSubmitForm();
+    }).catch(function (err) {
+      console.log(`account creation error: duplicate username`)
+      if (err.response.data.error.status === 409) {
+        $('#login-pass-failure').removeClass('hidden');
+      };
+    });
   });
 
   /**
@@ -166,15 +173,17 @@ $(async function () {
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
-      <span class="star">
-      <i class="far fa-star"></i>
-      </span>
+        <span class="star">
+          <i class="far fa-star"></i>
+        </span>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>
         <small class="article-author">by ${story.author}</small>
         <small class="article-hostname ${hostName}">(${hostName})</small>
-        <small class="article-username">posted by ${story.username}</small>
+        <div>
+          <small class="article-username">posted by ${story.username}</small>
+        </div>
       </li>
     `);
 
@@ -238,6 +247,7 @@ $(async function () {
       url: $('#url').val()
     };
     storyList.addStory(currentUser, storyObj);
+    $submitForm.slideToggle();
   })
 
   $('body').on('click', '.star', async function (e) {
@@ -247,13 +257,15 @@ $(async function () {
 
     if (foundIndex >= 0) {
       await currentUser.removeFavorite(newFavoriteId, currentUser.username, currentUser.loginToken).then(
-        function (response) {
+        // only remove from the favorites array if successfully removed from the server
+        function () {
           currentUser.favorites.splice(foundIndex, 1);
         }
       );
     } else {
       await currentUser.addFavorite(newFavoriteId, currentUser.username, currentUser.loginToken).then(
-        function (response) {
+        // only add to the favorites array if successfully added to the server 
+        function () {
           currentUser.favorites.push({
             storyId: newFavoriteId
           });
@@ -262,7 +274,7 @@ $(async function () {
 
     currentUser = await User.getLoggedInUser(currentUser.loginToken, currentUser.username);
     $(e.target).toggleClass("far").toggleClass("fas");
-  
+
   });
 
   async function checkForFavorites(user) {
@@ -274,25 +286,47 @@ $(async function () {
 
       // get the story ID of a story
       let storyElementId = favorite.storyId;
+      toggleStoryStar($(`#${storyElementId}`))
 
-      // find the story element on the main page's star on the main page and star it
-      var favoriteToStar = ($(`#${storyElementId}`).children(':first-child').children(':first-child'));
-      favoriteToStar.toggleClass("far").toggleClass("fas");
-
-      // generate each story's HTML element and append it to the favorites page
+      // generate the favorited story's HTML element and append it to the favorites page
       let storyHtml = generateStoryHTML(favorite);
+      toggleStoryStar(storyHtml)
       $favoriteArticles.append(storyHtml);
-
-      // toggle the star on found story element
-      $favoriteArticles.children(':last-child').children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
 
     }
   }
 
-  $('body').on('click', '#view-favorites', function () {
+  $('#view-favorites').on('click', function () {
     checkForFavorites(currentUser);
     hideElements();
     $favoriteArticles.toggle()
   })
+
+  $('#view-my-articles').on('click', function() {
+    hideElements();
+    $myArticles.toggle();
+    $myArticles.empty();
+
+    for (let story of currentUser.ownStories) {
+      let newStory = generateStoryHTML(story);
+      newStory.children(':last-child').append(`<a class="hidden" href="#"><small class="article-edit">edit article</small></a>`);
+      let foundIndex = currentUser.favorites.findIndex(story => story.storyId === newStory[0].id);
+      if (foundIndex >= 0) {
+        toggleStoryStar(newStory);
+      };
+      $myArticles.append(newStory);
+    }
+
+  })
+
+  $('#my-articles').on('mouseover', 'li', function(e) {
+    $(e.currentTarget).children(':last-child').children(':last-child').removeClass('hidden');
+  }).on('mouseleave', 'li', function(e) {
+    $(e.currentTarget).children(':last-child').children(':last-child').addClass('hidden');
+  })
+
+  function toggleStoryStar(jQueryStoryElement) {
+    jQueryStoryElement.children(':first-child').children(':first-child').toggleClass("far").toggleClass("fas");
+  }
 
 });

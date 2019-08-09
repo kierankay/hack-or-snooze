@@ -25,7 +25,7 @@
       <span>|</span>
       <a id="view-favorites" class="nav-link" href="#">favorites</a>
       <span>|</span>
-      <a class="nav-link" href="#">my stories</a>
+      <a id="view-my-articles" class="nav-link" href="#">my stories</a>
     </span>
 
     <a class="hidden nav-right" id="nav-logout" href="#">
@@ -105,17 +105,20 @@
       <div class="login-input">
         <label for="create-account-password">password</label>
         <input id="create-account-password" type="password">
+        <small id="login-pass-failure" class="form-text text-muted hidden">This username has already been taken.</small>
       </div>
       <button type="submit">create account</button>
     </form>
   </section>
-  <section id="user-profile" class="container hidden">
+  <section id="user-profile" class="hidden">
+    <article>
     <h4>User Profile Info</h4>
     <section>
       <div id="profile-name">Name:</div>
       <div id="profile-username">Username:</div>
       <div id="profile-account-date">Account Created:</div>
     </section>
+  </article>
   </section>
 </body>
 <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="

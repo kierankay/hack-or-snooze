@@ -182,7 +182,7 @@ form > hr {
 }
 
 .article-username {
-  display: block;
+  display: inline-block;
   margin-top: 5px;
   margin-left: 25px;
 }
@@ -210,6 +210,7 @@ form > hr {
 #user-profile > * {
   margin: 10px 0;
 }
+
 
 
 /** responsive queries for tightening things up for mobile. */

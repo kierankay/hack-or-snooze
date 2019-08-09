@@ -44,15 +44,19 @@ class StoryList {
    */
 
   async addStory(user, newStory) {
-    const response = await axios.post(`${BASE_URL}/stories`, {
+    await axios.post(`${BASE_URL}/stories`, {
       token: user.loginToken,
       story: {
         author: newStory.author,
         title: newStory.title,
         url: newStory.url
       }
+    }).then(async function(response) {
+      await generateStories();
+      return response;
     })
-    return response
+    // })
+    // return response
   };
   // TODO - Implement this functions!
   // this function should return the newly created story so it can be used in
@@ -95,10 +99,8 @@ class User {
         name
       }
     });
-
     // build a new User instance from the API response
     const newUser = new User(response.data.user);
-
     // attach the token to the newUser instance for convenience
     newUser.loginToken = response.data.token;
 
