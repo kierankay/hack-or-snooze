@@ -202,7 +202,8 @@ $(async function () {
       $loginForm,
       $createAccountForm,
       $favoriteArticles,
-      $userProfile
+      $userProfile,
+      $editForm
     ];
     elementsArr.forEach($elem => $elem.hide());
   }
@@ -366,7 +367,7 @@ $(async function () {
     let editedAuthor = $('#edit-author').val();
     let storyId = $('#story-id').val();
     let token = currentUser.loginToken;
-    await storyList.updateStory(token, editedAuthor, editedTitle, storyId).then(async function() {
+    await storyList.updateStory(token, editedAuthor, editedTitle, storyId).then(async function () {
       await refreshUser();
       updateArticles();
     }).catch(function (err) {
@@ -374,5 +375,30 @@ $(async function () {
     });
   });
 
+  $(window).scroll(async function () {
+    let skipStories = 25;
+    let reloaded = false;
+    if ($(window).scrollTop() - 20 > ($(document).height() - $(window).height()) && reloaded === false) {
+      reloaded = true;
+      console.log('growing!')
+      await StoryList.getStories(skipStories).then(function (response) {
+        console.log(response)
+        storyList = storyList.stories.concat(response.stories);
+        // console.log(storyList)
+        // $allStoriesList.empty();
+        // loop through all of our stories and generate HTML for them
+        $allStoriesList.empty();
+        for (let story of storyList) {
+          const result = generateStoryHTML(story);
+          $allStoriesList.append(result);
+        }
+        skipStories += 25;
+        console.log(skipStories);
+        reloaded = false;
+      }).catch(function(err) {
+      });
+
+    };
+  })
 
 });
