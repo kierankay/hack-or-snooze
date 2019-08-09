@@ -378,7 +378,7 @@ $(async function () {
   $(window).scroll(async function () {
     let skipStories = 25;
     let reloaded = false;
-    if ($(window).scrollTop() - 20 === ($(document).height() - $(window).height()) && reloaded === false) {
+    if ($(window).scrollTop() === ($(document).height() - $(window).height()) && reloaded === false) {
       reloaded = true;
       $('#scroll-more').toggle();
       $('#loading-more').toggle();
