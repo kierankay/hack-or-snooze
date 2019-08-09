@@ -378,26 +378,24 @@ $(async function () {
   $(window).scroll(async function () {
     let skipStories = 25;
     let reloaded = false;
-    if ($(window).scrollTop() - 20 > ($(document).height() - $(window).height()) && reloaded === false) {
+    if ($(window).scrollTop() - 20 === ($(document).height() - $(window).height()) && reloaded === false) {
       reloaded = true;
-      console.log('growing!')
+      $('#scroll-more').toggle();
+      $('#loading-more').toggle();
       await StoryList.getStories(skipStories).then(function (response) {
-        console.log(response)
-        storyList = storyList.stories.concat(response.stories);
-        // console.log(storyList)
-        // $allStoriesList.empty();
-        // loop through all of our stories and generate HTML for them
-        $allStoriesList.empty();
-        for (let story of storyList) {
+        const storyCache = response.stories;
+        storyList.stories = storyList.stories.concat(storyCache);
+        for (let story of storyCache) {
           const result = generateStoryHTML(story);
           $allStoriesList.append(result);
         }
+        $('#scroll-more').toggle();
+        $('#loading-more').toggle();
         skipStories += 25;
-        console.log(skipStories);
         reloaded = false;
       }).catch(function(err) {
+        console.log(err);
       });
-
     };
   })
 
