@@ -246,7 +246,11 @@ $(async function () {
       title: $('#title').val(),
       url: $('#url').val()
     };
-    storyList.addStory(currentUser, storyObj);
+    storyList.addStory(currentUser, storyObj).then(async function(response) {
+      console.log(response);
+      await generateStories();
+      return response;
+    });
     $submitForm.slideToggle();
   })
 
